@@ -1,12 +1,17 @@
 package org.usfirst.frc.team5499.robot;
-import com.ctre.CANTalon;  
+import com.ctre.CANTalon;
+
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot; 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TalonSRX;
+import edu.wpi.first.wpilibj.SPI;
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -19,8 +24,9 @@ public class Robot extends IterativeRobot {
 	Joystick leftStick;
 	Joystick rightStick;
 	Autobot autobot;
-	public CANTalon leftBack, rightBack, leftFront, rightFront;
-	
+	public CANTalon leftBack, rightBack, leftFront, rightFront, climber;
+	ADXRS450_Gyro gyro;
+	Encoder encoderLeft;
 	Timer timer = new Timer();
 
 	/**
@@ -39,6 +45,16 @@ public class Robot extends IterativeRobot {
 		leftFront = new CANTalon(10);
 		rightFront = new CANTalon(1);
 		
+		//Climber Talon
+		climber = new CANTalon(6);
+		
+		//Gyro
+		gyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
+		
+		//Encoders
+		encoderLeft = new Encoder(10, 11, false, Encoder.EncodingType.k2X);
+		
+		//Robot
 		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
 
 
@@ -68,8 +84,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopInit() {
-
-
+	gyro.reset();
+	encoderLeft.reset();
 	}
 
 	/**
@@ -77,7 +93,17 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		myRobot.tankDrive(-leftStick.getY(), -rightStick.getY());
+		//myRobot.tankDrive(-leftStick.getY(), -rightStick.getY());
+		
+//		if(leftStick.getRawButton(2)){
+//			climber.set(-1);
+//		}
+//		else{
+//			climber.set(0);
+//		}
+		
+		//System.out.println(gyro.getAngle());
+		System.out.println(encoderLeft.getRaw()/360);		
 	}
 
 	/**
