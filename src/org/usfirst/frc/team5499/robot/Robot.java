@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
 
 
 /**
@@ -31,6 +32,7 @@ public class Robot extends IterativeRobot {
 	ADXRS450_Gyro gyro;
 	Encoder encoderLeft;
 	Timer timer = new Timer();
+	Solenoid shifter;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -61,6 +63,8 @@ public class Robot extends IterativeRobot {
 		
 		//Robot
 		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
+		
+		shifter = new Solenoid(0);
 		
 	}
 
@@ -116,8 +120,20 @@ public class Robot extends IterativeRobot {
 			intake.set(0);
 		}
 		
+		if (rightStick.getRawButton(3) && shifter.get() == false){
+			shifter.set(true);
+			System.out.println("High Gear");
+		}
+		
+		if (rightStick.getRawButton(4) && shifter.get() == true){
+			shifter.set(false);
+			System.out.println("Low Gear");
+		}
+		
 		//System.out.println(gyro.getAngle());
-		System.out.println(encoderLeft.getRaw()/360);		
+		System.out.println(encoderLeft.getRaw()/360);	
+		
+		
 	}
 
 	/**
