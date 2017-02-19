@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.SPI;
+
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -20,11 +22,12 @@ import edu.wpi.first.wpilibj.SPI;
  * directory.
  */
 public class Robot extends IterativeRobot {
+	RobotSubsystems subsystems;
 	RobotDrive myRobot;
 	Joystick leftStick;
 	Joystick rightStick;
 	Autobot autobot;
-	public CANTalon leftBack, rightBack, leftFront, rightFront, climber;
+	public CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
 	ADXRS450_Gyro gyro;
 	Encoder encoderLeft;
 	Timer timer = new Timer();
@@ -35,7 +38,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		// Joysticks
 		leftStick =  new Joystick(0);
 		rightStick = new Joystick(1);
 		
@@ -48,6 +50,9 @@ public class Robot extends IterativeRobot {
 		//Climber Talon
 		climber = new CANTalon(6);
 		
+		// Intake Talon
+		intake = new CANTalon(4); 
+		
 		//Gyro
 		gyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
 		
@@ -56,8 +61,7 @@ public class Robot extends IterativeRobot {
 		
 		//Robot
 		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
-
-
+		
 	}
 
 	/**
@@ -67,7 +71,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousInit() {
 		timer.reset();
 		timer.start();
-		autobot = new Autobot(myRobot);
+		autobot = new Autobot(subsystems);
 	}
 
 	/**
@@ -94,13 +98,23 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		//myRobot.tankDrive(-leftStick.getY(), -rightStick.getY());
+		//myRobot.tankDrive(-rightStick.getX(), -rightStick.getY());
+		//myRobot.arcadeDrive(-leftStick.getY(),-leftStick.getX()); // arcade drive
+		myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
 		
-//		if(leftStick.getRawButton(2)){
-//			climber.set(-1);
-//		}
-//		else{
-//			climber.set(0);
-//		}
+		if(leftStick.getRawButton(2)){
+			climber.set(-1);
+		}
+		else{
+			climber.set(0);
+		}
+		
+		if(rightStick.getRawButton(1)){
+			intake.set(-1);
+		}
+		else{
+			intake.set(0);
+		}
 		
 		//System.out.println(gyro.getAngle());
 		System.out.println(encoderLeft.getRaw()/360);		
