@@ -1,4 +1,6 @@
 package org.usfirst.frc.team5499.robot;
+import java.util.ArrayList;
+
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
@@ -37,7 +39,8 @@ public class Robot extends IterativeRobot {
 	Timer timer = new Timer();
 	Solenoid shifter;
 	RobotDashboard dashboard;
-
+	
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -69,6 +72,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+			
 		autobot.movePeriod(5, 0.5, 0.5);
 	
 	}
