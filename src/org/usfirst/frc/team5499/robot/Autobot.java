@@ -7,42 +7,69 @@ import edu.wpi.first.wpilibj.Timer;
 
 
 public class Autobot {
+	
 	public static Autobot INSTANCE;
-	RobotSubsystems subsystem;
 	RobotDrive robot;
-	public final double CIRCUMFERENCE = 12.56637;	
+	
+	RobotSubsystems subsystem;
+	public final double CIRCUMFERENCE = 12.56637; // The circumference of the wheels for calculating travel distance
 	boolean finished; // a boolean every autonomous method will call
-	Timer mpTimer = new Timer(); //WILLIAM - why is it called mpTimer? I moved it to the class so we could use it for timeouts
+	Timer AutoTimer = new Timer();
+	boolean init = true;
+	double timeOut = 0;
+	
+	public double targetDistance = 0.0d;
 
 	public Autobot(RobotSubsystems x){
 		subsystem = x;
 	}
+	
 // every method in autonomous should be a boolean. It returns false until it is finished
-	public boolean movePeriod (double duration, double speedL, double speedR) { // Moving for a specific duration
-		finished = false;
-		mpTimer.reset();
-		mpTimer.start();
-		
-		if (mpTimer.get() <= duration){
-		
-			subsystem.myRobot.tankDrive(speedL, speedR);
+	public boolean movePeriod (double d, double speedL, double speedR) { // Moving for a specific duration
+		if (init) {
 			finished = false;
+			AutoTimer.reset();
+			AutoTimer.start();
+			timeOut = d;
+			init = false;
 		}
-		else{
-			finished = true;
+		else {
+			if (AutoTimer.get() <= timeOut){
+			
+				subsystem.myRobot.tankDrive(speedL, speedR);
+				finished = false;
+				
+			}
+			else{
+				subsystem.myRobot.tankDrive(0, 0);
+				finished = true;
+			}
+		}
+		
+		if(finished){
+			init = true; // reset the init variable	
 		}
 		return finished;
+		
 			
 	}
 	
 	public boolean moveDistance(double distance, double speed) {
-		finished = false;
-		mpTimer.reset();
-		mpTimer.start();
 		
+		finished = false;
+		
+		double travelDist = 0.0d;
+		
+		if (travelDist <= distance){
+			subsystem.myRobot.tankDrive(speed, speed);
+		}
+		else {
+			finished = true;
+		}
+		
+		AutoTimer.reset();
+		AutoTimer.start();
 		
 		return finished;
 	}
-	
-	
 }

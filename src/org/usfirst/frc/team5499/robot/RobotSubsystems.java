@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 
 public class RobotSubsystems {
@@ -18,6 +19,7 @@ public class RobotSubsystems {
 	ADXRS450_Gyro gyro;
 	Encoder encoderLeft;
 	Timer timer = new Timer();
+	Solenoid shifter;
 
 	
 	public void inits() {
@@ -45,6 +47,9 @@ public class RobotSubsystems {
 		
 		//Robot
 		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
+		
+		shifter = new Solenoid(0);
+		
 	}
 	
 	

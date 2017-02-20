@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.TalonSRX;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.smartdashboard.*;
 
 
 /**
@@ -24,15 +25,18 @@ import edu.wpi.first.wpilibj.Solenoid;
  */
 public class Robot extends IterativeRobot {
 	RobotSubsystems subsystems;
-	RobotDrive myRobot;
+	Autobot autobot;
 	Joystick leftStick;
 	Joystick rightStick;
-	Autobot autobot;
+	/*
+	RobotDrive myRobot;
 	public CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
 	ADXRS450_Gyro gyro;
 	Encoder encoderLeft;
+	*/
 	Timer timer = new Timer();
 	Solenoid shifter;
+	RobotDashboard dashboard;
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -40,31 +44,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
+		subsystems =  new RobotSubsystems();
+		subsystems.inits();
+		dashboard = new RobotDashboard();
+		
 		leftStick =  new Joystick(0);
 		rightStick = new Joystick(1);
 		
-		// Drive Talons
-		leftBack = new CANTalon(9);
-		rightBack = new CANTalon(2);
-		leftFront = new CANTalon(10);
-		rightFront = new CANTalon(1);
-		
-		//Climber Talon
-		climber = new CANTalon(6);
-		
-		// Intake Talon
-		intake = new CANTalon(4); 
-		
-		//Gyro
-		gyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
-		
-		//Encoders
-		encoderLeft = new Encoder(10, 11, false, Encoder.EncodingType.k2X);
-		
-		//Robot
-		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
-		
-		shifter = new Solenoid(0);
 		
 	}
 
@@ -84,6 +70,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		autobot.movePeriod(5, 0.5, 0.5);
+	
 	}
 
 	/**
@@ -92,8 +79,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopInit() {
-	gyro.reset();
-	encoderLeft.reset();
+		subsystems.gyro.reset();
+		subsystems.encoderLeft.reset();
 	}
 
 	/**
@@ -101,37 +88,43 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		//myRobot.tankDrive(-leftStick.getY(), -rightStick.getY());
-		//myRobot.tankDrive(-rightStick.getX(), -rightStick.getY());
-		//myRobot.arcadeDrive(-leftStick.getY(),-leftStick.getX()); // arcade drive
-		myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
 		
+		subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
+		
+		dashboard.execute(subsystems.shifter.get(), subsystems.encoderLeft.get()); // Displaying SmartDashboard
+		
+		// Climber Control
 		if(leftStick.getRawButton(2)){
-			climber.set(-1);
+			subsystems.climber.set(-1);
 		}
 		else{
-			climber.set(0);
+			subsystems.climber.set(0);
 		}
 		
+		// Gear intake Control
 		if(rightStick.getRawButton(1)){
-			intake.set(-1);
+			subsystems.intake.set(-1);
 		}
 		else{
-			intake.set(0);
+			subsystems.intake.set(0);
 		}
 		
-		if (rightStick.getRawButton(3) && shifter.get() == false){
-			shifter.set(true);
+		// SHIFTER CONTROL
+		// - High Gear
+		if (rightStick.getRawButton(3) && subsystems.shifter.get() == false){
+			subsystems.shifter.set(true);
 			System.out.println("High Gear");
 		}
 		
-		if (rightStick.getRawButton(4) && shifter.get() == true){
-			shifter.set(false);
+		// - Low Gear
+		if (rightStick.getRawButton(4) && subsystems.shifter.get() == true){
+			subsystems.shifter.set(false);
 			System.out.println("Low Gear");
 		}
 		
+		
 		//System.out.println(gyro.getAngle());
-		System.out.println(encoderLeft.getRaw()/360);	
+		//System.out.println(encoderLeft.getRaw()/360);	
 		
 		
 	}
