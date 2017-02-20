@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 public class RobotSubsystems {
 	RobotDrive myRobot;
@@ -17,9 +19,11 @@ public class RobotSubsystems {
 	Autobot autobot;
 	CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
 	ADXRS450_Gyro gyro;
-	Encoder encoderLeft;
+	Encoder encoderLeft, encoderRight;
 	Timer timer = new Timer();
 	Solenoid shifter;
+	AnalogInput gearProximity;
+	DigitalInput autoSwitch1, autoSwitch2, autoSwitch3;
 
 	
 	public void inits() {
@@ -44,11 +48,21 @@ public class RobotSubsystems {
 		
 		//Encoders
 		encoderLeft = new Encoder(10, 11, false, Encoder.EncodingType.k2X);
+		encoderRight = new Encoder(12, 13, false, Encoder.EncodingType.k2X);
 		
 		//Robot
 		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
 		
+		// Solenoids
 		shifter = new Solenoid(0);
+		
+		// Analog Inputs
+		gearProximity = new AnalogInput(0);
+		
+		// Digital Inputs
+		autoSwitch1 = new DigitalInput(0);
+		autoSwitch2 = new DigitalInput(1);
+		autoSwitch3 = new DigitalInput(2);
 		
 	}
 	

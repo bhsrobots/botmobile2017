@@ -44,13 +44,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		subsystems =  new RobotSubsystems();
+		subsystems =  new RobotSubsystems(); // all of the robot subsystems are in this class so it's easy to pass values around
 		subsystems.inits();
-		dashboard = new RobotDashboard();
+		dashboard = new RobotDashboard(subsystems); // pass the subsystems to the smartdashboard handling class
 		
 		leftStick =  new Joystick(0);
 		rightStick = new Joystick(1);
-		
+		subsystems.gyro.calibrate(); // calibrates the gyro when the robot turns on. ROBOT CANNOT MOVE or it won't work
 		
 	}
 
@@ -91,7 +91,7 @@ public class Robot extends IterativeRobot {
 		
 		subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
 		
-		dashboard.execute(subsystems.shifter.get(), subsystems.encoderLeft.get()); // Displaying SmartDashboard
+		dashboard.execute(); // Displaying SmartDashboard
 		
 		// Climber Control
 		if(leftStick.getRawButton(2)){
