@@ -39,6 +39,7 @@ public class Robot extends IterativeRobot {
 	Timer timer = new Timer();
 	Solenoid shifter;
 	RobotDashboard dashboard;
+	int autoState = 0;
 	
 	
 	/**
@@ -65,6 +66,8 @@ public class Robot extends IterativeRobot {
 		timer.reset();
 		timer.start();
 		autobot = new Autobot(subsystems);
+		
+		
 	}
 
 	/**
@@ -73,8 +76,22 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 			
-		autobot.movePeriod(5, 0.5, 0.5);
-	
+		switch (autoState) {
+			case 0:
+				System.out.println("state 0");
+				if (autobot.movePeriod(1, 0.5, 0.5)){
+					autoState++;
+				}
+				break;
+			case 1:
+				System.out.println("state 1");
+				break;
+			default:
+				System.out.println("default");
+				break;
+			
+		}
+		
 	}
 
 	/**
