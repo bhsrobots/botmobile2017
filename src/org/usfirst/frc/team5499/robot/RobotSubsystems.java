@@ -13,22 +13,24 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 public class RobotSubsystems {
-	RobotDrive myRobot;
+	public RobotDrive myRobot;
 	Joystick leftStick;
 	Joystick rightStick;
 	Autobot autobot;
-	CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
+	public CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
 	public boolean intakeEnabled = true;
+	public boolean haveAGear = false;
+	public boolean hadAGear = false; // did we have a gear in the last loop?
+	public boolean stopWithGear = false;
 	
-	
-	ADXRS450_Gyro gyro;
+	public ADXRS450_Gyro gyro;
 	public boolean gyroCalibrating;
-	Encoder encoderLeft, encoderRight;
-	Solenoid shifter;
-	AnalogInput gearProximity;
-	DigitalInput autoSwitch1, autoSwitch2, autoSwitch3;
+	public Encoder encoderLeft, encoderRight;
+	public Solenoid shifter;
+	public AnalogInput gearProximity;
+	public DigitalInput autoSwitch1, autoSwitch2, autoSwitch3;
 	
-	Timer timer = new Timer();
+	public Timer timer = new Timer();
 	
 	public void inits() {
 		// Joysticks
@@ -68,5 +70,23 @@ public class RobotSubsystems {
 		autoSwitch2 = new DigitalInput(1);
 		//autoSwitch3 = new DigitalInput(2);
 		
+	}
+	
+	public void execute(){
+		// GEAR STOP LOGIC
+		if (gearProximity.getVoltage() < 0.7){
+			haveAGear = true;
+			if(!hadAGear){ // of this is the first loop where we see a gear, reset the timer
+				timer.reset();
+			}
+		}
+		else haveAGear = false;
+		
+		if(haveAGear && timer.get()>0.4){
+			stopWithGear = true;
+		}
+		else stopWithGear = false;
+		
+		hadAGear = haveAGear;
 	}
 }

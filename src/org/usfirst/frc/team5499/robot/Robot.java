@@ -1,19 +1,15 @@
 package org.usfirst.frc.team5499.robot;
+import org.usfirst.frc.team5499.robot.auto.*;
 import java.util.ArrayList;
+import java.util.*;
 
 import com.ctre.CANTalon;
 
 //import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot; 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
-import edu.wpi.first.wpilibj.TalonSRX;
-import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 
@@ -31,18 +27,21 @@ public class Robot extends IterativeRobot {
 	Joystick leftStick;
 	Joystick rightStick;
 	/*
-	RobotDrive myRobot;
-	public CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
-	ADXRS450_Gyro gyro;
-	Encoder encoderLeft;
-	*/
+      RobotDrive myRobot;
+      public CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
+      ADXRS450_Gyro gyro;
+      Encoder encoderLeft;
+	 */
 	Timer timer = new Timer();
 	Timer teleopTimer = new Timer();
 	Solenoid shifter;
 	RobotDashboard dashboard;
 	int autoState = 0;
-	
-	
+	BasicAuto currentAction;
+	List<BasicAuto> actions = new ArrayList<BasicAuto>();
+
+
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -52,11 +51,27 @@ public class Robot extends IterativeRobot {
 		subsystems =  new RobotSubsystems(); // all of the robot subsystems are in this class so it's easy to pass values around
 		subsystems.inits();
 		dashboard = new RobotDashboard(subsystems); // pass the subsystems to the smartdashboard handling class
-		
+
 		leftStick =  new Joystick(0);
 		rightStick = new Joystick(1);
 		subsystems.gyro.calibrate(); // calibrates the gyro when the robot turns on. ROBOT CANNOT MOVE or it won't work
-		
+
+		// Autonomous Sequence
+		BasicAuto move1 = new MovePeriod(subsystems, 1, 0.5); // move for 1 second at half speed
+		BasicAuto move2 = new MovePeriod(subsystems, 1, -0.5);
+		BasicAuto move3 = new MoveDistance(subsystems, 12, 0.5); // move 12 inches at half speed
+		BasicAuto turn1 = new TurnTime(subsystems, 1, 0.5); // turn for one second at half speed
+		BasicAuto turn2 = new TurnAngle(subsystems, 45, 0.5); // turn 45 degrees in place at half speed
+		BasicAuto stop = new DoNothing(subsystems);
+
+		actions.clear();
+		actions.add(move1);
+		actions.add(move2);
+		actions.add(move3);
+		actions.add(turn1);
+		actions.add(turn2);
+		actions.add(stop);
+
 	}
 
 	/**
@@ -67,8 +82,11 @@ public class Robot extends IterativeRobot {
 		timer.reset();
 		timer.start();
 		autobot = new Autobot(subsystems);
+		autoState = 0;
 		
-		
+		currentAction = actions.get(autoState); // the first init has to happen here
+		currentAction.init();
+
 	}
 
 	/**
@@ -76,27 +94,15 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-			
-		switch (autoState) {
-			case 0:
-				System.out.println("state 0");
-				if (autobot.movePeriod(1, 0.5, 0.5)){
-					autoState++;
-				}
-				break;
-			case 1:
-				System.out.println("state 1");
-				if (autobot.movePeriod(1, -0.5, -0.5)){
-					autoState++;
-				}
-				break;
-			default:
-				autobot.movePeriod(1, 0, 0);
-				System.out.println("default");
-				break;
-			
+		currentAction = actions.get(autoState);
+		currentAction.execute(); // execute the current action
+
+		if (currentAction.done()){ // if the current action is done
+			autoState++; // increment to the next action
+			currentAction = actions.get(autoState); 
+			currentAction.init(); // initialize the next action
 		}
-		
+
 	}
 
 	/**
@@ -117,14 +123,14 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		
-		
+		subsystems.execute(); // this function checks the proximity sensor
+
 		subsystems.gyroCalibrating = false;
-	
+
 		subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
-		
+
 		dashboard.execute(); // Displaying SmartDashboard
-		
+
 		// Climber Control
 		if(leftStick.getRawButton(2)){
 			subsystems.climber.set(-1);
@@ -132,30 +138,25 @@ public class Robot extends IterativeRobot {
 		else{
 			subsystems.climber.set(0);
 		}
-		
-		// Gear intake Control
-		
-		if(rightStick.getRawButton(1)){
-			if (subsystems.gearProximity.getVoltage() < 0.7){ // There's nothing in proximity
-				if (subsystems.intakeEnabled){ // Motor enabled?
-					subsystems.intake.set(-.8); // Run intake
-				}
+
+
+
+		// CHECK THAT MOTOR IS IN BRAKE MODE!!!!! THIS WOULD EXPLAIN A LOT!
+		if(rightStick.getRawButton(1)){ // if the right stick trigger is pressed
+			if (subsystems.stopWithGear){ // and the gear logic wasn't triggered
+				subsystems.intake.set(0);
 			}
-			else{ // There's something in the way, lets hope it's a gear
-				subsystems.intakeEnabled = false;
-				subsystems.timer.reset();
+			else {
+				subsystems.intake.set(-.8); // Run intake
 			}
+			
 		}
 		else{
-			subsystems.intakeEnabled = true; // On release, re-enable the motor
-			subsystems.intake.set(0);
+			subsystems.intake.set(0); // if the right stick trigger isn't pressed
+			
 		}
 		
-		// if the intake isn't enabled, disable motor after a certain amount of time
-		if (!subsystems.intakeEnabled && timer.get()>.04){
-			subsystems.intake.set(0);
-		}
-		
+		// INTAKE REVERSE
 		if(subsystems.leftStick.getRawButton(1)){
 			subsystems.intake.set(0.5);
 		}
@@ -164,42 +165,25 @@ public class Robot extends IterativeRobot {
 		}
 
 
-/*		
-		if(rightStick.getRawButton(1)){
-			if (subsystems.gearProximity.getVoltage() < 0.7){ // There's nothing in proximity
-				if (subsystems.intakeEnabled){ // Motor enabled?
-					subsystems.intake.set(-.8); // Run intake
-				}
-			}
-			else{ // There's something in the way, lets hope it's a gear
-				subsystems.intakeEnabled = false;
-				subsystems.timer.reset();
-			}
-		}
-		else{
-			subsystems.intake.set(0);
-		}*/
-		
 
-		 
 		// SHIFTER CONTROL
 		// - High Gear
 		if (rightStick.getRawButton(3) && subsystems.shifter.get() == false){
 			subsystems.shifter.set(true);
 			System.out.println("High Gear");
 		}
-		
+
 		// - Low Gear
 		if (rightStick.getRawButton(4) && subsystems.shifter.get() == true){
 			subsystems.shifter.set(false);
 			System.out.println("Low Gear");
 		}
-		
-		
+
+
 		//System.out.println(gyro.getAngle());
 		//System.out.println(encoderLeft.getRaw()/360);	
-			
-		
+
+
 	}
 
 	/**
@@ -207,6 +191,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void testPeriodic() {
-		
+
 	}
 }
