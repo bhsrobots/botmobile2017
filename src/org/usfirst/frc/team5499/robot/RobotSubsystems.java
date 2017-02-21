@@ -18,6 +18,8 @@ public class RobotSubsystems {
 	Joystick rightStick;
 	Autobot autobot;
 	CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
+	public boolean intakeEnabled = true;
+	
 	
 	ADXRS450_Gyro gyro;
 	public boolean gyroCalibrating;

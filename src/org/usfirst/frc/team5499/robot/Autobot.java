@@ -18,7 +18,7 @@ public class Autobot {
 	boolean init = true;
 	double timeOut = 0;
 	
-	public double targetDistance = 0.0d;
+	public double travelDistance = 0.0d;
 
 	public Autobot(RobotSubsystems x){
 		subsystem = x;
@@ -29,7 +29,7 @@ public class Autobot {
 		if (init) {
 			finished = false;
 			AutoTimer.reset();
-			AutoTimer.start();
+			AutoTimer.start(); 
 			timeOut = d;
 			init = false;
 		}
@@ -56,20 +56,29 @@ public class Autobot {
 	
 	public boolean moveDistance(double distance, double speed) {
 		
-		finished = false;
+		if (init){
+			finished = false;
+			AutoTimer.reset();
+			AutoTimer.start();
+			subsystem.encoderLeft.reset();
+			subsystem.encoderRight.reset();
+			init = false;
+			travelDistance = 0.0d;
+		}
 		
-		double travelDist = 0.0d;
-		
-		if (travelDist <= distance){
+		travelDistance = subsystem.encoderLeft.get() * CIRCUMFERENCE / 36;	
+		if (travelDistance <= distance){
 			subsystem.myRobot.tankDrive(speed, speed);
 		}
 		else {
 			finished = true;
 		}
 		
+		
 		AutoTimer.reset();
 		AutoTimer.start();
 		
 		return finished;
 	}
+	
 }

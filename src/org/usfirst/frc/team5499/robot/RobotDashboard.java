@@ -14,8 +14,8 @@ public class RobotDashboard {
 		
 		SmartDashboard.putNumber("Subsystem Timer: ", subsystems.timer.get());
 		SmartDashboard.putBoolean("Gear Engaged: ", subsystems.shifter.get());
-		SmartDashboard.putNumber("Left Encoder Position: ", subsystems.encoderLeft.get() );
-		SmartDashboard.putNumber("Right Encoder Position: ", subsystems.encoderRight.get());
+		SmartDashboard.putNumber("Left Encoder Position: ", subsystems.encoderLeft.getRaw() );
+		SmartDashboard.putNumber("Right Encoder Position: ", subsystems.encoderRight.getRaw());
 		SmartDashboard.putNumber("Input Proximity Sensor", subsystems.gearProximity.getVoltage());
 		SmartDashboard.putBoolean("Auto Switch One:",subsystems.autoSwitch1.get());
 		SmartDashboard.putBoolean("Auto Switch Two:",subsystems.autoSwitch2.get());

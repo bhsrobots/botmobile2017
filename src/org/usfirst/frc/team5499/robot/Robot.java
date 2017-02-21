@@ -42,8 +42,6 @@ public class Robot extends IterativeRobot {
 	RobotDashboard dashboard;
 	int autoState = 0;
 	
-	double calibrationTime = 3.0;
-	
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -88,8 +86,12 @@ public class Robot extends IterativeRobot {
 				break;
 			case 1:
 				System.out.println("state 1");
+				if (autobot.movePeriod(1, -0.5, -0.5)){
+					autoState++;
+				}
 				break;
 			default:
+				autobot.movePeriod(1, 0, 0);
 				System.out.println("default");
 				break;
 			
@@ -107,6 +109,7 @@ public class Robot extends IterativeRobot {
 		subsystems.encoderLeft.reset();
 		teleopTimer.reset();
 		teleopTimer.start();
+		subsystems.intakeEnabled = true;
 	}
 
 	/**
@@ -115,54 +118,87 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		
-		if (teleopTimer.get() <= calibrationTime){
-			subsystems.gyro.calibrate();
-			subsystems.gyroCalibrating = true;
+		
+		subsystems.gyroCalibrating = false;
+	
+		subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
+		
+		dashboard.execute(); // Displaying SmartDashboard
+		
+		// Climber Control
+		if(leftStick.getRawButton(2)){
+			subsystems.climber.set(-1);
 		}
 		else{
-			subsystems.gyroCalibrating = false;
+			subsystems.climber.set(0);
+		}
 		
-			subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
-			
-			dashboard.execute(); // Displaying SmartDashboard
-			
-			// Climber Control
-			if(leftStick.getRawButton(2)){
-				subsystems.climber.set(-1);
-			}
-			else{
-				subsystems.climber.set(0);
-			}
-			
-			// Gear intake Control
-			if(rightStick.getRawButton(1)){
-				if (subsystems.gearProximity.getVoltage() < 0.7){
-					subsystems.intake.set(-1);
+		// Gear intake Control
+		
+		if(rightStick.getRawButton(1)){
+			if (subsystems.gearProximity.getVoltage() < 0.7){ // There's nothing in proximity
+				if (subsystems.intakeEnabled){ // Motor enabled?
+					subsystems.intake.set(-.8); // Run intake
 				}
 			}
-			else{
-				subsystems.intake.set(0);
+			else{ // There's something in the way, lets hope it's a gear
+				subsystems.intakeEnabled = false;
+				subsystems.timer.reset();
 			}
-			
-			// SHIFTER CONTROL
-			// - High Gear
-			if (rightStick.getRawButton(3) && subsystems.shifter.get() == false){
-				subsystems.shifter.set(true);
-				System.out.println("High Gear");
-			}
-			
-			// - Low Gear
-			if (rightStick.getRawButton(4) && subsystems.shifter.get() == true){
-				subsystems.shifter.set(false);
-				System.out.println("Low Gear");
-			}
-			
-			
-			//System.out.println(gyro.getAngle());
-			//System.out.println(encoderLeft.getRaw()/360);	
-			
-			
 		}
+		else{
+			subsystems.intakeEnabled = true; // On release, re-enable the motor
+			subsystems.intake.set(0);
+		}
+		
+		// if the intake isn't enabled, disable motor after a certain amount of time
+		if (!subsystems.intakeEnabled && timer.get()>.04){
+			subsystems.intake.set(0);
+		}
+		
+		if(subsystems.leftStick.getRawButton(1)){
+			subsystems.intake.set(0.5);
+		}
+		else{
+			subsystems.intake.set(0);
+		}
+
+
+/*		
+		if(rightStick.getRawButton(1)){
+			if (subsystems.gearProximity.getVoltage() < 0.7){ // There's nothing in proximity
+				if (subsystems.intakeEnabled){ // Motor enabled?
+					subsystems.intake.set(-.8); // Run intake
+				}
+			}
+			else{ // There's something in the way, lets hope it's a gear
+				subsystems.intakeEnabled = false;
+				subsystems.timer.reset();
+			}
+		}
+		else{
+			subsystems.intake.set(0);
+		}*/
+		
+
+		 
+		// SHIFTER CONTROL
+		// - High Gear
+		if (rightStick.getRawButton(3) && subsystems.shifter.get() == false){
+			subsystems.shifter.set(true);
+			System.out.println("High Gear");
+		}
+		
+		// - Low Gear
+		if (rightStick.getRawButton(4) && subsystems.shifter.get() == true){
+			subsystems.shifter.set(false);
+			System.out.println("Low Gear");
+		}
+		
+		
+		//System.out.println(gyro.getAngle());
+		//System.out.println(encoderLeft.getRaw()/360);	
+			
 		
 	}
 
