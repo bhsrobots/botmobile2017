@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 import com.ctre.CANTalon;
 
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+//import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot; 
 import edu.wpi.first.wpilibj.Joystick;
@@ -37,8 +37,11 @@ public class Robot extends IterativeRobot {
 	Encoder encoderLeft;
 	*/
 	Timer timer = new Timer();
+	Timer teleopTimer = new Timer();
 	Solenoid shifter;
 	RobotDashboard dashboard;
+	
+	double calibrationTime = 3.0;
 	
 	
 	/**
@@ -83,8 +86,10 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopInit() {
-		subsystems.gyro.reset();
+		//subsystems.gyro.reset();
 		subsystems.encoderLeft.reset();
+		teleopTimer.reset();
+		teleopTimer.start();
 	}
 
 	/**
@@ -93,43 +98,54 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		
-		subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
-		
-		dashboard.execute(); // Displaying SmartDashboard
-		
-		// Climber Control
-		if(leftStick.getRawButton(2)){
-			subsystems.climber.set(-1);
+		if (teleopTimer.get() <= calibrationTime){
+			subsystems.gyro.calibrate();
+			subsystems.gyroCalibrating = true;
 		}
 		else{
-			subsystems.climber.set(0);
+			subsystems.gyroCalibrating = false;
+		
+			subsystems.myRobot.arcadeDrive(-leftStick.getY(), -rightStick.getX()); // throttle on one side and steering on the other
+			
+			dashboard.execute(); // Displaying SmartDashboard
+			
+			// Climber Control
+			if(leftStick.getRawButton(2)){
+				subsystems.climber.set(-1);
+			}
+			else{
+				subsystems.climber.set(0);
+			}
+			
+			// Gear intake Control
+			if(rightStick.getRawButton(1)){
+				if (subsystems.gearProximity.getVoltage() < 0.7){
+					subsystems.intake.set(-1);
+				}
+			}
+			else{
+				subsystems.intake.set(0);
+			}
+			
+			// SHIFTER CONTROL
+			// - High Gear
+			if (rightStick.getRawButton(3) && subsystems.shifter.get() == false){
+				subsystems.shifter.set(true);
+				System.out.println("High Gear");
+			}
+			
+			// - Low Gear
+			if (rightStick.getRawButton(4) && subsystems.shifter.get() == true){
+				subsystems.shifter.set(false);
+				System.out.println("Low Gear");
+			}
+			
+			
+			//System.out.println(gyro.getAngle());
+			//System.out.println(encoderLeft.getRaw()/360);	
+			
+			
 		}
-		
-		// Gear intake Control
-		if(rightStick.getRawButton(1)){
-			subsystems.intake.set(-1);
-		}
-		else{
-			subsystems.intake.set(0);
-		}
-		
-		// SHIFTER CONTROL
-		// - High Gear
-		if (rightStick.getRawButton(3) && subsystems.shifter.get() == false){
-			subsystems.shifter.set(true);
-			System.out.println("High Gear");
-		}
-		
-		// - Low Gear
-		if (rightStick.getRawButton(4) && subsystems.shifter.get() == true){
-			subsystems.shifter.set(false);
-			System.out.println("Low Gear");
-		}
-		
-		
-		//System.out.println(gyro.getAngle());
-		//System.out.println(encoderLeft.getRaw()/360);	
-		
 		
 	}
 

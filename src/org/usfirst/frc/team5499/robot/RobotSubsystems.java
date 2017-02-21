@@ -18,13 +18,15 @@ public class RobotSubsystems {
 	Joystick rightStick;
 	Autobot autobot;
 	CANTalon leftBack, rightBack, leftFront, rightFront, climber, intake;
+	
 	ADXRS450_Gyro gyro;
+	public boolean gyroCalibrating;
 	Encoder encoderLeft, encoderRight;
-	Timer timer = new Timer();
 	Solenoid shifter;
 	AnalogInput gearProximity;
 	DigitalInput autoSwitch1, autoSwitch2, autoSwitch3;
-
+	
+	Timer timer = new Timer();
 	
 	public void inits() {
 		// Joysticks
@@ -47,8 +49,8 @@ public class RobotSubsystems {
 		gyro = new ADXRS450_Gyro(SPI.Port.kOnboardCS0);
 		
 		//Encoders
-		encoderLeft = new Encoder(10, 11, false, Encoder.EncodingType.k2X);
-		encoderRight = new Encoder(12, 13, false, Encoder.EncodingType.k2X);
+		encoderLeft = new Encoder(2, 3, false, Encoder.EncodingType.k2X);
+		encoderRight = new Encoder(4, 5, false, Encoder.EncodingType.k2X);
 		
 		//Robot
 		myRobot = new RobotDrive(leftBack, leftFront, rightBack, rightFront);
@@ -62,11 +64,7 @@ public class RobotSubsystems {
 		// Digital Inputs
 		autoSwitch1 = new DigitalInput(0);
 		autoSwitch2 = new DigitalInput(1);
-		autoSwitch3 = new DigitalInput(2);
+		//autoSwitch3 = new DigitalInput(2);
 		
 	}
-	
-	
-	
-	
 }
