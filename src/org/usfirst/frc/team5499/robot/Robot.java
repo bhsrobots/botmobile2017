@@ -36,10 +36,9 @@ public class Robot extends IterativeRobot {
 	Timer teleopTimer = new Timer();
 	Solenoid shifter;
 	RobotDashboard dashboard;
-	int autoState = 0;
 	BasicAuto currentAction;
 	List<BasicAuto> actions = new ArrayList<BasicAuto>();
-
+	Double intakeSpeed = 0.0;
 
 
 	/**
@@ -56,22 +55,63 @@ public class Robot extends IterativeRobot {
 		rightStick = new Joystick(1);
 		subsystems.gyro.calibrate(); // calibrates the gyro when the robot turns on. ROBOT CANNOT MOVE or it won't work
 
-		// Autonomous Sequence
-		BasicAuto move1 = new MovePeriod(subsystems, 1, 0.5); // move for 1 second at half speed
-		BasicAuto move2 = new MovePeriod(subsystems, 1, -0.5);
-		BasicAuto move3 = new MoveDistance(subsystems, 12, 0.5); // move 12 inches at half speed
-		BasicAuto turn1 = new TurnTime(subsystems, 1, 0.5); // turn for one second at half speed
-		BasicAuto turn2 = new TurnAngle(subsystems, 45, 0.5); // turn 45 degrees in place at half speed
-		BasicAuto stop = new DoNothing(subsystems);
+		
+		autobot = new Autobot(subsystems);
+		
+		//autobot.init(subsystems.autoSwitch1.get(),subsystems.autoSwitch2.get()); // use the switches on the robot  to decide which auto routine to do
+		boolean switch1 = subsystems.autoSwitch1.get();
+		boolean switch2 = subsystems.autoSwitch2.get();
+		
+		if(switch1==false && switch2==false){
+			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
+			BasicAuto stop = new DoNothing(subsystems);
+			actions.clear();
+			actions.add(highgear);
+			actions.add(stop);
+		}
+		else if(switch1==true && switch2==false){
+			BasicAuto move1 = new MovePeriod(subsystems, 1, 0.5); // move for 1 second at half speed
+			BasicAuto move2 = new MovePeriod(subsystems, 1, -0.5);
+			BasicAuto move3 = new MoveDistance(subsystems, 12, 0.5); // move 12 inches at half speed
+			BasicAuto turn1 = new TurnTime(subsystems, 1, 0.5); // turn for one second at half speed
+			BasicAuto turn2 = new TurnAngle(subsystems, -45, 0.5); // turn 45 degrees in place at half speed
+			BasicAuto stop = new DoNothing(subsystems);
+			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
 
-		actions.clear();
-		actions.add(move1);
-		actions.add(move2);
-		actions.add(move3);
-		actions.add(turn1);
-		actions.add(turn2);
-		actions.add(stop);
+	
+			actions.clear();
+			actions.add(move1);
+			actions.add(move2);
+			actions.add(move3);
+			actions.add(turn1);
+			actions.add(turn2);
+			actions.add(highgear);
+			actions.add(stop);
+		}
+		else if(switch1==false && switch2==true){
+			BasicAuto turn1 = new TurnAngle(subsystems, -180, 0.5);
+			BasicAuto stop = new DoNothing(subsystems);
+			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
+			
+			actions.clear();
+			actions.add(turn1);
+			actions.add(highgear);
+			actions.add(stop);
+		}
+		else {
+			BasicAuto stop = new DoNothing(subsystems);
+			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
 
+			actions.clear();
+			actions.add(highgear);
+			actions.add(stop);
+		}
+		
+
+	}
+	
+	public void robotPeriodic() {
+		dashboard.execute(); // Displaying SmartDashboard
 	}
 
 	/**
@@ -82,9 +122,9 @@ public class Robot extends IterativeRobot {
 		timer.reset();
 		timer.start();
 		autobot = new Autobot(subsystems);
-		autoState = 0;
+		subsystems.autoState = 0;
 		
-		currentAction = actions.get(autoState); // the first init has to happen here
+		currentAction = actions.get(subsystems.autoState); // the first init has to happen here
 		currentAction.init();
 
 	}
@@ -94,12 +134,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		currentAction = actions.get(autoState);
+		dashboard.execute(); // Displaying SmartDashboard
+		currentAction = actions.get(subsystems.autoState);
 		currentAction.execute(); // execute the current action
 
 		if (currentAction.done()){ // if the current action is done
-			autoState++; // increment to the next action
-			currentAction = actions.get(autoState); 
+			subsystems.autoState++; // increment to the next action
+			currentAction = actions.get(subsystems.autoState); 
 			currentAction.init(); // initialize the next action
 		}
 
@@ -141,29 +182,28 @@ public class Robot extends IterativeRobot {
 
 
 
-		// CHECK THAT MOTOR IS IN BRAKE MODE!!!!! THIS WOULD EXPLAIN A LOT!
-		if(rightStick.getRawButton(1)){ // if the right stick trigger is pressed
-			if (subsystems.stopWithGear){ // and the gear logic wasn't triggered
-				subsystems.intake.set(0);
-			}
-			else {
-				subsystems.intake.set(-.8); // Run intake
-			}
-			
+
+		
+		// INTAKE - this works!
+		if(subsystems.rightStick.getRawButton(1)){
+			intakeSpeed = -0.6;
+			//subsystems.intake.set(-.8);
 		}
 		else{
-			subsystems.intake.set(0); // if the right stick trigger isn't pressed
-			
+			intakeSpeed = 0.0;
+			//subsystems.intake.set(0);
 		}
 		
-		// INTAKE REVERSE
-		if(subsystems.leftStick.getRawButton(1)){
-			subsystems.intake.set(0.5);
+		if(subsystems.stopWithGear){
+			intakeSpeed = 0.0;
 		}
-		else{
-			subsystems.intake.set(0);
+		
+		if(subsystems.leftStick.getRawButton(1) && !subsystems.rightStick.getRawButton(1)){
+			intakeSpeed = 0.6;
 		}
-
+		
+		subsystems.intake.set(intakeSpeed);
+		
 
 
 		// SHIFTER CONTROL

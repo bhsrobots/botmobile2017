@@ -21,7 +21,12 @@ public class RobotDashboard {
 		SmartDashboard.putBoolean("Auto Switch Two:",subsystems.autoSwitch2.get());
 		SmartDashboard.putNumber("Gyro Angle: ", subsystems.gyro.getAngle());
 		SmartDashboard.putBoolean("Gyro Calibration:", subsystems.gyroCalibrating);
-			
+		SmartDashboard.putNumber("Auto State:", subsystems.autoState);
+		
+		SmartDashboard.putBoolean("have a gear", subsystems.haveAGear);
+		SmartDashboard.putBoolean("had a gear", subsystems.hadAGear);
+		SmartDashboard.putBoolean("stop with gear", subsystems.stopWithGear);
+		
 	}
 
 }

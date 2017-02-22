@@ -30,7 +30,11 @@ public class RobotSubsystems {
 	public AnalogInput gearProximity;
 	public DigitalInput autoSwitch1, autoSwitch2, autoSwitch3;
 	
+	public int autoState;
 	public Timer timer = new Timer();
+	
+	public final boolean HIGH = true;
+	public final boolean LOW = false;
 	
 	public void inits() {
 		// Joysticks
@@ -70,14 +74,18 @@ public class RobotSubsystems {
 		autoSwitch2 = new DigitalInput(1);
 		//autoSwitch3 = new DigitalInput(2);
 		
+		autoState = 0;
+		
 	}
 	
 	public void execute(){
 		// GEAR STOP LOGIC
-		if (gearProximity.getVoltage() < 0.7){
+		/*
+		if (gearProximity.getVoltage() > 0.5){
 			haveAGear = true;
 			if(!hadAGear){ // of this is the first loop where we see a gear, reset the timer
 				timer.reset();
+				timer.start();
 			}
 		}
 		else haveAGear = false;
@@ -85,7 +93,18 @@ public class RobotSubsystems {
 		if(haveAGear && timer.get()>0.4){
 			stopWithGear = true;
 		}
-		else stopWithGear = false;
+		else stopWithGear = false;*/
+		
+		// SIMPLE IMPLEMENTATION no delay
+		if (gearProximity.getVoltage() > 0.7){
+			haveAGear = true;
+			stopWithGear = true;
+		}
+		else {
+			haveAGear = false;
+			stopWithGear = false;
+		}
+		
 		
 		hadAGear = haveAGear;
 	}
