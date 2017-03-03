@@ -62,42 +62,47 @@ public class Robot extends IterativeRobot {
 		boolean switch1 = subsystems.autoSwitch1.get();
 		boolean switch2 = subsystems.autoSwitch2.get();
 		
+		// Auto for driving straight forward to gear
 		if(switch1==false && switch2==false){
 			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
+			BasicAuto moveDistance = new MoveDistance(subsystems, 75, 0.25); //Subtracted 4 in. cause of peg length
 			BasicAuto stop = new DoNothing(subsystems);
+			
 			actions.clear();
+			actions.add(moveDistance);
 			actions.add(highgear);
 			actions.add(stop);
 		}
+		//Auto for gear on right, need to start in corner
 		else if(switch1==true && switch2==false){
-			BasicAuto move1 = new MovePeriod(subsystems, 1, 0.5); // move for 1 second at half speed
-			BasicAuto move2 = new MovePeriod(subsystems, 1, -0.5);
-			BasicAuto move3 = new MoveDistance(subsystems, 12, 0.5); // move 12 inches at half speed
-			BasicAuto turn1 = new TurnTime(subsystems, 1, 0.5); // turn for one second at half speed
-			BasicAuto turn2 = new TurnAngle(subsystems, -45, 0.5); // turn 45 degrees in place at half speed
+			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gearf
+			BasicAuto move1 = new MoveDistance(subsystems, 16.0468785, 0.25); // move for 1 second at half speed
+			BasicAuto turn1 = new TurnAngle(subsystems, -30, 0.25); //Not sure if this turns left or right
+			BasicAuto move2 = new MoveDistance(subsystems, 120.5039178, 0.5); //Subtracted 4 in. cause of peg length
+			BasicAuto move3 = new MoveDistance(subsystems, 12, 0.25);
 			BasicAuto stop = new DoNothing(subsystems);
-			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
 
 	
 			actions.clear();
 			actions.add(move1);
+			actions.add(turn1);
 			actions.add(move2);
 			actions.add(move3);
-			actions.add(turn1);
-			actions.add(turn2);
 			actions.add(highgear);
 			actions.add(stop);
 		}
+		//Cross base line
 		else if(switch1==false && switch2==true){
-			BasicAuto turn1 = new TurnAngle(subsystems, -180, 0.5);
-			BasicAuto stop = new DoNothing(subsystems);
 			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
+			BasicAuto stop = new DoNothing(subsystems);
+			BasicAuto move1 = new MoveDistance(subsystems, 143.5, 0.5);
 			
 			actions.clear();
-			actions.add(turn1);
+			actions.add(move1);
 			actions.add(highgear);
 			actions.add(stop);
 		}
+		//Do nothing
 		else {
 			BasicAuto stop = new DoNothing(subsystems);
 			BasicAuto highgear = new ShiftGears(subsystems, subsystems.HIGH); // shifts to high gear
